@@ -44,5 +44,3 @@ class Laporan(models.Model):
     ]
     status = models.CharField(choices=STATUS_CHOICES, default='menunggu')
     tgl_laporan =models.DateField()
-
-
