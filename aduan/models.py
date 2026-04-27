@@ -48,7 +48,7 @@ class Laporan(models.Model):
     nama_pelapor = models.CharField(max_length=100)
     no_hp_pelapor = models.CharField(max_length=15)
     email_pelapor = models.EmailField(blank=True, null=True)
-    hubungan_pelapor = models.CharField(max_length=50, blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.kategori} - {self.nama_pelapor}"
