@@ -22,8 +22,3 @@ urlpatterns = [
     path('api/', include('aduan.urls')),
 ]
 
-from django.urls import path, include
-
-urlpatterns = [
-    path('api/', include('aduan.urls')),
-]
