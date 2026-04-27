@@ -31,7 +31,7 @@ class Laporan(models.Model):
     id_laporan = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     instansi_id = models.ForeignKey(Instansi, on_delete=models.CASCADE)
-
+    nama_pelapor = models.CharField(max_length=100, null=True, blank=True)
     foto = models.CharField(max_length=100)
     tgl_laporan = models.DateTimeField()
 
@@ -51,6 +51,10 @@ class Laporan(models.Model):
         ('proses', 'proses'),
         ('menunggu', 'menunggu'),
     ]
+    nama_pelapor = models.CharField(max_length=255, null=True, blank=True)
+    email_pelapor = models.EmailField(null=True, blank=True)
+    no_hp_pelapor = models.CharField(max_length=20, null=True, blank=True)
+    hubungan_pelapor = models.CharField(max_length=100, null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
 
     def __str__(self):
