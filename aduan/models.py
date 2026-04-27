@@ -26,7 +26,7 @@ class Instansi(models.Model):
 
 class Laporan(models.Model):
     id_laporan =models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    instansi_id =models.ForeignKey(User, on_delete=models.CASCADE, related_name='instansi')
+    instansi_id =models.ForeignKey(Instansi, on_delete=models.CASCADE, related_name='instansi')
     foto =models.CharField(max_length=100)
     deksripsi =models.TextField()
     KATEGORI_CHOICES = [
@@ -44,5 +44,13 @@ class Laporan(models.Model):
     ]
     status = models.CharField(choices=STATUS_CHOICES, default='menunggu')
     tgl_laporan =models.DateField()
+    
+    nama_pelapor = models.CharField(max_length=100)
+    no_hp_pelapor = models.CharField(max_length=15)
+    email_pelapor = models.EmailField(blank=True, null=True)
+    hubungan_pelapor = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.kategori} - {self.nama_pelapor}"
 
 
