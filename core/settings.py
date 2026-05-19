@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import environ
+import ssl
 
 env = environ.Env(
     DEBUG = (bool, False)
@@ -166,3 +167,18 @@ SIMPLE_JWT = {
 =======
 CORS_ALLOW_ALL_ORIGINS = True  # Untuk development saja
 >>>>>>> fitur-aduan
+
+# EMAIL CONFIGURATION
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = 'muhammadrifai3776@gmail.com'
+EMAIL_HOST_PASSWORD = 'lcgg hnjq bvla adkw'
+
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass

@@ -1,54 +1,60 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import Laporan, Instansi
-import json
-from django.utils import timezone
+from django.shortcuts import render
 
-@csrf_exempt
-def create_laporan(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
+# Create your views here.
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.hashers import make_password
+import uuid
+from .models import User
+from django.core.mail import send_mail
+from django.conf import settings
+
+reset_tokens = {}
+
+@api_view(['POST'])
+def request_reset_password(request):
+    email = request.data.get('email')
 
     try:
-        # Karena kita pakai form-data di Postman/Frontend
-        kategori = request.POST.get('kategori')
-        deskripsi = request.POST.get('deskripsi')
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-        foto_file = request.FILES.get('foto') 
-        nama_pelapor = request.POST.get('nama_pelapor') or "Warga"
-        email_pelapor = request.POST.get('email_pelapor') or "masyarakat@email.com"
-        no_hp_pelapor = request.POST.get('no_hp_pelapor') or "-"
-        hubungan_pelapor = request.POST.get('hubungan_pelapor') or "Warga"
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({'message': 'User tidak ditemukan'}, status=404)
 
-        if not deskripsi:
-            return JsonResponse({'error': 'Detail aduan wajib diisi'}, status=400)
+    token = str(uuid.uuid4())
+    reset_tokens[token] = user.id_user
 
-        instansi = Instansi.objects.first()
-        if not instansi:
-            return JsonResponse({'error': 'Instansi kosong'}, status=500)
+    reset_link = f"http://localhost:3000/reset-password?token={token}"
 
-        # Simpan ke Database
-        laporan = Laporan.objects.create(
-            instansi_id=instansi,
-            kategori=kategori if kategori in ['ODGJ', 'PGOT'] else 'ODGJ',
-            deskripsi=deskripsi,
-            latitude=float(latitude) if latitude else 0.0,
-            longitude=float(longitude) if longitude else 0.0,
-            foto=foto_file.name if foto_file else "default.jpg",
-            tgl_laporan=timezone.now(),
-            status='menunggu',
-            nama_pelapor=request.POST.get('nama_pelapor'),
-            email_pelapor=request.POST.get('email_pelapor'),
-            no_hp_pelapor=request.POST.get('no_hp_pelapor'),
-            hubungan_pelapor=request.POST.get('hubungan_pelapor')
-        )
+    send_mail(
+        'Reset Password',
+        f'Klik link ini: {reset_link}',
+        settings.EMAIL_HOST_USER,  # Pakai ini agar otomatis ambil 'muhammadrifai3776@gmail.com'
+        [email],
+        fail_silently=False,
+    )
 
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Laporan berhasil dikirim',
-            'id_laporan': str(laporan.id_laporan)
-        })
+    return Response({'message': 'Email reset dikirim'})
 
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+@api_view(['POST'])
+def confirm_reset_password(request):
+    token = request.data.get('token')
+    password = request.data.get('password')
+
+    if token not in reset_tokens:
+        return Response({'message': 'Token tidak valid'}, status=400)
+
+    user_id = reset_tokens[token]
+    user = User.objects.get(id_user=user_id)
+
+    user.password = make_password(password)
+    user.save()
+
+    del reset_tokens[token]
+
+    return Response({'message': 'Password berhasil direset'})
