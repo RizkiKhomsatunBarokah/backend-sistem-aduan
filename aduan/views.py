@@ -1,52 +1,54 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status, viewsets
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken # Pastikan sudah install djangorestframework-simplejwt
-from .serializers import LoginSerializer, RegisterSerializer, InstansiSerializer
-from .models import Instansi
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Laporan, Instansi
+import json
+from django.utils import timezone
 
-@api_view(['POST'])
-def login(request):
-    serializer = LoginSerializer(data=request.data)
+@csrf_exempt
+def create_laporan(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-    if serializer.is_valid():
-        user = serializer.validated_data['user']
+    try:
+        # Karena kita pakai form-data di Postman/Frontend
+        kategori = request.POST.get('kategori')
+        deskripsi = request.POST.get('deskripsi')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        foto_file = request.FILES.get('foto') 
+        nama_pelapor = request.POST.get('nama_pelapor') or "Warga"
+        email_pelapor = request.POST.get('email_pelapor') or "masyarakat@email.com"
+        no_hp_pelapor = request.POST.get('no_hp_pelapor') or "-"
+        hubungan_pelapor = request.POST.get('hubungan_pelapor') or "Warga"
 
-        # MEMBUAT TOKEN JWT SECARA MANUAL
-        refresh = RefreshToken.for_user(user)
-        
-        # Menyisipkan role ke dalam isi token (payload) 
-        # agar bisa dibaca oleh jwt-decode di React
-        refresh['role'] = user.role 
+        if not deskripsi:
+            return JsonResponse({'error': 'Detail aduan wajib diisi'}, status=400)
 
-        return Response({
+        instansi = Instansi.objects.first()
+        if not instansi:
+            return JsonResponse({'error': 'Instansi kosong'}, status=500)
+
+        # Simpan ke Database
+        laporan = Laporan.objects.create(
+            instansi_id=instansi,
+            kategori=kategori if kategori in ['ODGJ', 'PGOT'] else 'ODGJ',
+            deskripsi=deskripsi,
+            latitude=float(latitude) if latitude else 0.0,
+            longitude=float(longitude) if longitude else 0.0,
+            foto=foto_file.name if foto_file else "default.jpg",
+            tgl_laporan=timezone.now(),
+            status='menunggu',
+            nama_pelapor=request.POST.get('nama_pelapor'),
+            email_pelapor=request.POST.get('email_pelapor'),
+            no_hp_pelapor=request.POST.get('no_hp_pelapor'),
+            hubungan_pelapor=request.POST.get('hubungan_pelapor')
+        )
+
+        return JsonResponse({
             'status': 'success',
-            'message': 'Login berhasil',
-            'token': str(refresh.access_token), # Ini yang WAJIB ada untuk React
-            'data': {
-                'id_user': str(user.id_user),
-                'nama': user.nama,
-                'role': user.role
-            }
+            'message': 'Laporan berhasil dikirim',
+            'id_laporan': str(laporan.id_laporan)
         })
 
-    return Response({
-        'status': 'error',
-        'message': serializer.errors
-    }, status=status.HTTP_400_BAD_REQUEST)
-
-class RegisterView(APIView):
-    def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                "status": "Berhasil",
-                "message": "User berhasil terdaftar"
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class InstansiViewSet(viewsets.ModelViewSet):
-    queryset = Instansi.objects.all()
-    serializer_class = InstansiSerializer
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

@@ -49,7 +49,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'aduan',
+<<<<<<< HEAD
     
+=======
+    'corsheaders',
+>>>>>>> fitur-aduan
 ]
 
 MIDDLEWARE = [
@@ -152,9 +156,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+<<<<<<< HEAD
 from datetime import timedelta
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'id_user',
     'USER_ID_CLAIM': 'user_id',
 }
+=======
+CORS_ALLOW_ALL_ORIGINS = True  # Untuk development saja
+>>>>>>> fitur-aduan
