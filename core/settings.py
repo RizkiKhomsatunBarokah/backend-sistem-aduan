@@ -33,9 +33,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-g...')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG', default= True)
+DEBUG = env('DEBUG', default= False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['10.10.10.157', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -50,11 +50,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'aduan',
-<<<<<<< HEAD
-    
-=======
-    'corsheaders',
->>>>>>> fitur-aduan
+
 ]
 
 MIDDLEWARE = [
@@ -152,24 +148,23 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-<<<<<<< HEAD
 from datetime import timedelta
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'id_user',
     'USER_ID_CLAIM': 'user_id',
 }
-=======
 CORS_ALLOW_ALL_ORIGINS = True  # Untuk development saja
->>>>>>> fitur-aduan
 
 # EMAIL CONFIGURATION
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False

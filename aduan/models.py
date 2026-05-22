@@ -1,4 +1,5 @@
 import uuid
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
@@ -11,7 +12,7 @@ class Instansi(models.Model):
 
 class User(AbstractUser):
     id_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    instansi_id = models.ForeignKey(Instansi, on_delete=models.CASCADE, related_name='instansi')
+    instansi_id = models.ForeignKey(Instansi, on_delete=models.CASCADE, related_name='users')
     nama = models.CharField(max_length=100)
     password = models.CharField(max_length=20)
     email = models.EmailField(max_length=50, unique=True)
@@ -25,14 +26,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.nama
-
-
-class Instansi(models.Model):
-    id_instansi = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    nama_instansi = models.CharField(max_length=100)
-    no_telp = models.CharField(max_length=15, unique=True)
-    jenis_instansi = models.CharField(max_length=50)
-    alamat = models.CharField(max_length=100)
 
 
 class Laporan(models.Model):
